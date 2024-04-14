@@ -22,11 +22,15 @@ const fetchPokemonList = async () => {
   }
 };
 
-export const getPokemonListWithDetails = async (): Promise<Pokemon[] | null> => {
+export const getPokemonListWithDetails = async (searchTerm: string = ""): Promise<Pokemon[] | null> => {
   try {
-    const pokemons = await fetchPokemonList();
-
-    return pokemons.filter((pokemon): pokemon is Pokemon => pokemon !== null);
+    if (searchTerm) {
+      const pokemon = await api.getPokemonByName(searchTerm.toLowerCase());
+      return [pokemon];
+    } else {
+      const pokemons = await fetchPokemonList();
+      return pokemons.filter((pokemon): pokemon is Pokemon => pokemon !== null);
+    }
   } catch (error: unknown) {
     const apiError: Partial<AxiosError> = {
       name: "AxiosError",
