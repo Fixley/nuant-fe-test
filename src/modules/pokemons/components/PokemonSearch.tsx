@@ -14,7 +14,6 @@ const PokemonSearch = ({
 
   useEffect(() => {
     debouncedChange(inputValue);
-    console.log(inputValue);
     return () => debouncedChange.cancel();
   }, [inputValue, debouncedChange]);
 

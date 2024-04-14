@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from "react-router-dom";
 import PokemonTypeBadge from "./PokemonTypeBadge";
 
@@ -8,11 +7,13 @@ import { Pokemon } from 'pokenode-ts';
 interface PokemonCardSmallProps {
   pokemon: Pokemon;
   searchTerm: string;
+  filterType: string;
 }
 
 const PokemonCardSmall = ({
   pokemon,
   searchTerm,
+  filterType
 }: PokemonCardSmallProps) => {
   const pokemonTypes = pokemon.types.map(
     (type: { type: { name: string } }) => type.type.name
@@ -21,7 +22,7 @@ const PokemonCardSmall = ({
   return (
     <Link
       to={`/pokemons/${pokemon.name}`}
-      state={{ search: searchTerm }}
+      state={{ search: searchTerm, filter: filterType }}
       className="block bg-white rounded-lg overflow-hidden bg-white rounded-lg shadow overflow-hidden sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
     >
       <div className="flex items-center p-4">
