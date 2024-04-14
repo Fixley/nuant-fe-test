@@ -14,6 +14,24 @@ const extractDescription = (speciesData: {
     englishFlavorText?.flavor_text.replace(/[\n\f]/g, " ") ??
     "Description not available."
   );
+};
+
+const validatePokemonName = (pokemonName: string) => {
+  if (!pokemonName) {
+    throw new Error("Pokemon name is required.");
+  }
+
+  if (typeof pokemonName !== "string") {
+    throw new Error("Pokemon name must be a string.");
+  }
+
+  if (!/^[a-zA-Z-]+$/.test(pokemonName)) {
+    throw new Error("Pokemon name must only contain letters and dashes.");
+  }
+
+  if (pokemonName.length < 3) {
+    throw new Error("Pokemon name must be at least 3 characters long.");
+  }
 }
 
 export const api = new PokemonClient();
@@ -41,7 +59,9 @@ const handleSpeciesData = async (speciesResult: PromiseSettledResult<PokemonSpec
   return "Description not available.";
 }
 
-export const getPokemonItemWithDetails = async (pokemonName: string): Promise<PokemonWithDescription> => {  
+export const getPokemonItemWithDetails = async (pokemonName: string): Promise<PokemonWithDescription> => { 
+  validatePokemonName(pokemonName);
+
   try {
     const [pokemonResult, speciesResult] = await Promise.allSettled([
       getPokemonData(pokemonName),
