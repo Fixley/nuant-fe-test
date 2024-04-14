@@ -8,18 +8,16 @@ interface UsePokemonListProps {
   error: Error | null;
 }
 
-const usePokemonList = (searchTerm: string): UsePokemonListProps => {
+const usePokemonList = (searchTerm: string, filterType: string): UsePokemonListProps => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log({ searchTerm })
     setLoading(true);
     setError(null);
-    getPokemonListWithDetails(searchTerm)
+    getPokemonListWithDetails(searchTerm, filterType)
       .then(apiPokemons => {
-        console.log({ apiPokemons })
         if (apiPokemons !== null) {
           const mapPokemons = mapPokemonList(apiPokemons);
           setPokemons(mapPokemons);
@@ -31,7 +29,7 @@ const usePokemonList = (searchTerm: string): UsePokemonListProps => {
         setError(error);
         setLoading(false);
       });
-  }, [searchTerm]);
+  }, [searchTerm, filterType]);
 
   return { pokemons, loading, error };
 };

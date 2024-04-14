@@ -8,7 +8,7 @@ const fetchPokemonList = async () => {
     const response = await api.listPokemons();
     const pokemonPromises = response.results.map(async (result) => {
       try {
-          return await api.getPokemonByName(result.name);
+        return await api.getPokemonByName(result.name);
       } catch (error) {
         console.error(`Failed to fetch Pokémon ${result.name}:`, error);
         return null;
@@ -22,11 +22,24 @@ const fetchPokemonList = async () => {
   }
 };
 
-export const getPokemonListWithDetails = async (searchTerm: string = ""): Promise<Pokemon[] | null> => {
+export const getPokemonListWithDetails = async (searchTerm = "", filterType = ""): Promise<Pokemon[] | null> => {
   try {
     if (searchTerm) {
       const pokemon = await api.getPokemonByName(searchTerm.toLowerCase());
       return [pokemon];
+    } else if (filterType) {
+      const typeDetail = await api.getTypeByName(filterType.toLowerCase());
+      const pokemonPromises = typeDetail.pokemon.map(({ pokemon }) =>
+        api.getPokemonByName(pokemon.name)
+      );
+      const results = await Promise.allSettled(pokemonPromises);
+      return results.reduce(
+        (acc, result) =>
+          result.status === "fulfilled"
+            ? [...acc, result.value]
+            : acc,
+        [] as Pokemon[]
+      );
     } else {
       const pokemons = await fetchPokemonList();
       return pokemons.filter((pokemon): pokemon is Pokemon => pokemon !== null);
