@@ -43,3 +43,7 @@ Overall, approach the task with professionalism, attention to detail, and a focu
     - Result display
     - Other (please specify)
 
+## Demo
+
+![Pokemon Listing Page](listing-page.png)
+![Pokemon Details Page](details-page.png)
