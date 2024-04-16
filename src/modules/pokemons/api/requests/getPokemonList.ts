@@ -1,57 +1,80 @@
 import { AxiosError } from "axios";
 import { PokemonClient, Pokemon } from "pokenode-ts";
 
+interface PokemonListConfig {
+  searchTerm?: string;
+  filterType?: string;
+}
+
 const api = new PokemonClient();
 
-const fetchPokemonList = async () => {
+const formatApiError = (error: AxiosError): Partial<AxiosError> => {
+  return {
+    name: "AxiosError",
+    message: error.message,
+    code: error?.code,
+    status: error?.response?.status
+  };
+};
+
+const fetchPokemonDetails = async (pokemonNames: string[]): Promise<Pokemon[]> => {
+  const pokemonPromises = pokemonNames.map(name => api.getPokemonByName(name));
+  const results = await Promise.allSettled(pokemonPromises);
+  return results.reduce((acc, result) => result.status === 'fulfilled' ? [...acc, result.value] : acc, [] as Pokemon[]);
+}
+
+const fetchPokemonList = async (): Promise<Pokemon[]> => {
   try {
     const response = await api.listPokemons();
-    const pokemonPromises = response.results.map(async (result) => {
-      try {
-        return await api.getPokemonByName(result.name);
-      } catch (error) {
-        console.error(`Failed to fetch Pokémon ${result.name}:`, error);
-        return null;
-      }
-    });
-    const pokemonResults = await Promise.allSettled(pokemonPromises);
-    return pokemonResults.map((result) => result.status === "fulfilled" ? result.value : null);
+    const pokemonNames = response.results.map(pokemon => pokemon.name);
+    return await fetchPokemonDetails(pokemonNames);
   } catch (error) {
     console.error("Failed to fetch Pokémon list:", error);
     return [];
   }
 };
 
-export const getPokemonListWithDetails = async (searchTerm = "", filterType = ""): Promise<Pokemon[] | null> => {
+const filterByType = async (filterType: string): Promise<Pokemon[]> => {
+  const typeDetail = await api.getTypeByName(filterType.toLowerCase());
+  const pokemonByType = typeDetail.pokemon.map(({ pokemon }) => pokemon.name);
+  return await fetchPokemonDetails(pokemonByType);
+};
+
+const fetchAllPokemons = async (): Promise<Pokemon[]> => {
+  return await fetchPokemonList();
+};
+
+const filterByTypeAndSearchTerm = async (filterType: string, searchTerm: string): Promise<Pokemon[]> => {
+  const typeDetail = await api.getTypeByName(filterType.toLowerCase());
+  const pokemonByType = typeDetail.pokemon.map(({ pokemon }) => pokemon.name);
+  const filteredPokemons = await fetchPokemonDetails(pokemonByType);
+  return filteredPokemons.filter(pokemon => pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()));
+};
+
+const filterBySearchTerm = async (searchTerm: string): Promise<Pokemon[]> => {
+  const { count } = await api.listPokemons(0, 1);
+  const response = await api.listPokemons(0, count);
+  const filteredResults = response.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const pokemonNames = filteredResults.map(pokemon => pokemon.name);
+  return await fetchPokemonDetails(pokemonNames);
+};
+
+export const getPokemonListWithDetails = async (config: PokemonListConfig = {}): Promise<Pokemon[] | null> => {
   try {
-    if (searchTerm) {
-      const pokemon = await api.getPokemonByName(searchTerm.toLowerCase());
-      return [pokemon];
-    } else if (filterType) {
-      const typeDetail = await api.getTypeByName(filterType.toLowerCase());
-      const pokemonPromises = typeDetail.pokemon.map(({ pokemon }) =>
-        api.getPokemonByName(pokemon.name)
-      );
-      const results = await Promise.allSettled(pokemonPromises);
-      return results.reduce(
-        (acc, result) =>
-          result.status === "fulfilled"
-            ? [...acc, result.value]
-            : acc,
-        [] as Pokemon[]
-      );
+    if (config.searchTerm && config.filterType) {
+      return await filterByTypeAndSearchTerm(config.filterType, config.searchTerm);
+    } else if (config.searchTerm) {
+      return await filterBySearchTerm(config.searchTerm);
+    } else if (config.filterType) {
+      return await filterByType(config.filterType);
     } else {
-      const pokemons = await fetchPokemonList();
-      return pokemons.filter((pokemon): pokemon is Pokemon => pokemon !== null);
+      return await fetchAllPokemons();
     }
-  } catch (error: unknown) {
-    const apiError: Partial<AxiosError> = {
-      name: "AxiosError",
-      message: (error as Error).message,
-      code: (error as AxiosError)?.code,
-      status: (error as AxiosError)?.response?.status,
-    };
+  } catch (error) {
     console.error("Failed to fetch Pokémon list data:", error);
-    throw apiError;
+    throw formatApiError(error as AxiosError);
   }
 }
+
+
+

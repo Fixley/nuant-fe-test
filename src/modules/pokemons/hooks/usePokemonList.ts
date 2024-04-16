@@ -16,7 +16,7 @@ const usePokemonList = (searchTerm: string, filterType: string): UsePokemonListP
   useEffect(() => {
     setLoading(true);
     setError(null);
-    getPokemonListWithDetails(searchTerm, filterType)
+    getPokemonListWithDetails({ searchTerm, filterType })
       .then(apiPokemons => {
         if (apiPokemons !== null) {
           const mapPokemons = mapPokemonList(apiPokemons);
