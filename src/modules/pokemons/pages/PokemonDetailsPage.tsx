@@ -21,16 +21,20 @@ function PokemonDetailsPage() {
       searchParams.set('filter', filter);
     }
 
-    navigate(`/pokemons?${searchParams.toString()}`);
+    navigate(`/pokemons?${searchParams.toString()}`, {
+      state: {
+        scrollPosition: location.state?.scrollPosition,
+        search: location.state?.search,
+        filter: location.state?.filter
+      }
+    });
   };
 
   return (
     <div className="container mx-auto px-4 relative min-h-screen py-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold mb-4 mt-8">Pokemon Details</h1>
+        <h1 className="text-2xl font-bold mb-4 mt-8">Pokémon Details</h1>
       </header>
-
-      <div className="border-t border-gray-300 mb-6"></div>
       
       <main className="grid grid-cols-1 gap-4">
         {loading && (

@@ -1,12 +1,15 @@
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import usePokemonList from "../hooks/usePokemonList";
 import PokemonSearch from "../components/PokemonSearch";
 import PokemonCardSmall from "../components/PokemonCardSmall";
 import PokemonSelect from "../components/PokemonSelect";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PokemonListingPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const scrollRef = useRef(location.state?.scrollPosition);
+
   const searchTerm = searchParams.get("search") ?? "";
   const filterType = searchParams.get("filter") ?? "";
   const [typeQuery, setTypeQuery] = useState(filterType);
@@ -43,6 +46,19 @@ const PokemonListingPage = () => {
     updateSearchParameters(searchTerm, newFilterType);
   };
 
+  useEffect(() => {
+    let timerId: undefined | number = undefined;
+
+    if (scrollRef.current) {
+      timerId = setTimeout(() => {
+        window.scrollTo(0, scrollRef.current);
+      }, 0)
+    }
+
+    return () => {
+      return clearTimeout(timerId)
+    }
+  }, []);
 
   return (
     <div className="container mx-auto px-4 relative min-h-screen py-8">
@@ -53,8 +69,6 @@ const PokemonListingPage = () => {
           <PokemonSelect type={typeQuery} onChange={handleFilterChange} />
         </div>
       </header>
-
-      <div className="border-t border-gray-300 mb-6"></div>
 
       <main className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {loading && (
@@ -71,7 +85,8 @@ const PokemonListingPage = () => {
         )}
         {!loading && !error && pokemons.length === 0 && (
           <div className="text-black p-4 rounded bg-white overflow-hidden sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl">
-            No Pokémons found for <span className="capitalize font-bold text-black">{typeQuery}</span>
+            No Pokémons found for{" "}
+            <span className="capitalize font-bold text-black">{typeQuery}</span>
           </div>
         )}
         {!loading &&
@@ -83,6 +98,7 @@ const PokemonListingPage = () => {
               pokemon={pokemon}
               searchTerm={searchTerm}
               filterType={typeQuery}
+              scrollPosition={window.scrollY}
             />
           ))}
       </main>
