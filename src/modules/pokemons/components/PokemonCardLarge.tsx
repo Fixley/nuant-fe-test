@@ -1,6 +1,12 @@
 import { Pokemon } from "pokenode-ts";
 import PokemonTypeBadge from "./PokemonTypeBadge";
-import placeholderImg from "../../../assets/react.svg";
+import fallbackImage from "../../../assets/react.svg";
+import {
+  convertHectogramsToKilograms,
+  convertDecimetersToMeters,
+  mapSpriteUrls,
+  mapPokemonImage,
+} from "../utils/mapPokemon";
 
 interface PokemonWithDescription extends Pokemon {
   description: string;
@@ -11,18 +17,14 @@ interface PokemonCardLargeProps {
   onBack: () => void;
 }
 
-const PokemonCardLarge = ({
-  pokemon,
-  onBack,
-}: PokemonCardLargeProps) => {
-  const pokemonTypes: string[] = pokemon.types.map((type) => type.type.name);
-  const spriteUrls = Object.values(pokemon.sprites)
-    .filter((sprite) => typeof sprite === "string" && sprite)
-    .map((sprite) => sprite as string);
+const PokemonCardLarge = ({ pokemon, onBack }: PokemonCardLargeProps) => {
+  const pokemonTypes = pokemon.types.map((type) => type.type.name);
+  const pokemonImage = mapPokemonImage(pokemon.sprites, fallbackImage);
+  const pokemonSprites = mapSpriteUrls(pokemon.sprites);
 
+  const pokemonWeightInKilograms = convertHectogramsToKilograms(pokemon.weight);
+  const pokemonHeightInMeters = convertDecimetersToMeters(pokemon.height);
 
-  const pokemonImage = pokemon.sprites.other?.["official-artwork"].front_default ??
-    pokemon.sprites.front_default ?? placeholderImg ?? "";
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl">
       <div className="p-4 flex justify-between items-center">
@@ -66,33 +68,67 @@ const PokemonCardLarge = ({
         </div>
       </div>
 
-      {spriteUrls.length > 0 && <div className="p-4">
-        <h3 className="text-lg text-black font-semibold mb-2">Gallery</h3>
-        <div className="flex flex-wrap justify-start gap-4">
-          {spriteUrls.map((url, index) => (
-            <div key={url} className="w-20 h-20">
-              <img
-                src={url ?? placeholderImg}
-                loading="lazy"
-                decoding="async"
-                alt={`Sprite ${index + 1}`}
-                className="object-contain w-full h-full"
-              />
-            </div>
-          ))}
+      {pokemonSprites.length > 0 && (
+        <div className="p-4">
+          <h3 className="text-lg text-black font-semibold mb-2">Sprites</h3>
+          <div className="flex flex-wrap justify-start gap-4">
+            {pokemonSprites.map((url, index) => (
+              <div key={url} className="w-20 h-20">
+                <img
+                  src={url}
+                  loading="lazy"
+                  decoding="async"
+                  alt={`Sprite ${index + 1}`}
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>}
+      )}
 
       <div className="p-4">
         <h3 className="text-lg text-black font-semibold mb-2">Attributes</h3>
         <dl className="divide-y divide-gray-100">
           <div className="py-2 flex justify-between">
-            <dt className="text-sm font-medium text-gray-900">Height:</dt>
-            <dd className="text-sm text-gray-700">{pokemon.height} cm</dd>
+            <dt className="text-sm font-medium text-gray-900 mr-2">
+              Abilities:
+            </dt>
+            <dd className="text-sm text-gray-700">
+              {pokemon.abilities
+                .map((ability) => ability.ability.name)
+                .join(", ")}
+            </dd>
           </div>
           <div className="py-2 flex justify-between">
-            <dt className="text-sm font-medium text-gray-900">Weight:</dt>
-            <dd className="text-sm text-gray-700">{pokemon.weight} kg</dd>
+            <dt className="text-sm font-medium text-gray-900 mr-2">
+              Base Experience:
+            </dt>
+            <dd className="text-sm text-gray-700">{pokemon.base_experience}</dd>
+          </div>
+          <div className="py-2 flex justify-between">
+            <dt className="text-sm font-medium text-gray-900 mr-2">Forms:</dt>
+            <dd className="text-sm text-gray-700">
+              {pokemon.forms.map((form) => form.name).join(", ")}
+            </dd>
+          </div>
+          <div className="py-2 flex justify-between">
+            <dt className="text-sm font-medium text-gray-900 mr-2">Height:</dt>
+            <dd className="text-sm text-gray-700">
+              {pokemonHeightInMeters} m
+            </dd>
+          </div>
+          <div className="py-2 flex justify-between">
+            <dt className="text-sm font-medium text-gray-900 mr-2">Weight:</dt>
+            <dd className="text-sm text-gray-700">
+              {pokemonWeightInKilograms} kg
+            </dd>
+          </div>
+          <div className="py-2 flex justify-between">
+            <dt className="text-sm font-medium text-gray-900 mr-2">Moves:</dt>
+            <dd className="text-sm text-gray-700">
+              {pokemon.moves.map((move) => move.move.name).join(", ")}
+            </dd>
           </div>
         </dl>
       </div>
