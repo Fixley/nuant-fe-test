@@ -8,9 +8,8 @@ const PokemonSelect = ({
   onChange: (value: string) => void;
 }) => {
   const { types, loading, error } = usePokemonTypeList();
+  const hasOptions = !loading || !error || types.length > 0;
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error loading types!</p>;
 
   return (
     <div className="w-full sm:w-auto">
@@ -25,13 +24,13 @@ const PokemonSelect = ({
           onChange={(e) => onChange(e.target.value)}
         >
           <option value="">Types</option>
-          {types.map((typeOption) => (
+          {hasOptions && types.map((typeOption) => (
             <option key={typeOption} value={typeOption}>
               {typeOption}
             </option>
           ))}
         </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 pr-3">
           <svg
             className="fill-current h-4 w-4"
             xmlns="http://www.w3.org/2000/svg"

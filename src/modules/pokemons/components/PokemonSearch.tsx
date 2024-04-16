@@ -10,7 +10,7 @@ const PokemonSearch = ({
 }) => {
   const [inputValue, setInputValue] = useState(term);
 
-  const debouncedChange = debounce(onChange, 1000);
+  const debouncedChange = debounce(onChange, 500);
 
   useEffect(() => {
     debouncedChange(inputValue);
