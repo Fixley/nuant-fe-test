@@ -46,4 +46,5 @@ Overall, approach the task with professionalism, attention to detail, and a focu
 ## Demo
 
 ![Pokemon Listing Page](listing-page.png)
+![Pokemon Results Page](search-results-pikachu.png)
 ![Pokemon Details Page](details-page.png)
