@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -5,8 +6,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import PokemonListingPage from "./modules/pokemons/pages/PokemonListingPage";
-import PokemonDetailsPage from "./modules/pokemons/pages/PokemonDetailsPage";
 import NotFoundPage from "./modules/commons/pages/NotFoundPage";
+
+const PokemonDetailsPage = lazy(() => import('./modules/pokemons/pages/PokemonDetailsPage'));
 
 function App() {
   return (
@@ -14,7 +16,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate replace to="/pokemons" />} />
           <Route path="/pokemons" element={<PokemonListingPage />} />
-          <Route path="/pokemons/:pokemonName" element={<PokemonDetailsPage />} />
+          <Route
+            path="/pokemons/:pokemonName"
+            element={
+              <Suspense fallback={<div>Loading...</div>}> {/* Provide a fallback component */}
+                <PokemonDetailsPage />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
     </Router>
